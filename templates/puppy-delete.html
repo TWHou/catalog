@@ -2,6 +2,15 @@
 
 {% block content %}
 
-Show delete form for puppy {{puppy}}
+<h1>Has {{puppy.name}} been adopted?</h1>
+
+<form action="{{url_for('deletePuppy', shelter_id=shelter_id, puppy_id = puppy.id)}}" method="POST" role="form">
+
+  <div class="jc-sb my1">
+    <input type="submit" class="btn--red" value="YES">
+    <a class="btn--green btn-cancel" href="{{url_for('detailPuppy', shelter_id=shelter_id, puppy_id = puppy.id)}}">Cancel</a>
+  </div>
+
+</form>
 
 {% endblock %}

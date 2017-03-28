@@ -2,6 +2,21 @@
 
 {% block content %}
 
-Show list of puppies in shelter {{shelter}}
+<div class="jc-sb align-baseline">
+  <h1>Puppies in {{shelter.name}}</h1>
+  <a class="btn--green" href="{{url_for('newPuppy', shelter_id=shelter.id)}}">Found a New Puppy</a>
+</div>
+<div class="grd">
+  {% for row in puppies|batch(3) %}
+  <div class="grd-row bg--light-gray p1">
+    {% for puppy in row %}
+      <div class="grd-row-col-2-6 jc-sa direction-column p1">
+        <img src="{{puppy.picture}}" alt="{{puppy.name}}">
+        <a href="{{url_for('detailPuppy',shelter_id=shelter.id, puppy_id=puppy.id)}}" class="h4">{{puppy.name}}</a>
+      </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
 
 {% endblock %}

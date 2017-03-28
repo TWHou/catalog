@@ -2,6 +2,29 @@
 
 {% block content %}
 
-Show edit shelter form for shelter {{shelter}}
+<h1>Start a New Shelter</h1>
+
+<form action="{{url_for('editShelter', shelter_id=shelter.id)}}" method="POST" role="form">
+  <fieldset>
+    <legend>Shelter Name</legend>
+    <input type="text" name="name" value="{{shelter.name}}">
+  </fieldset>
+
+  <fieldset>
+    <legend>Address</legend>
+    <label for="address">Street</label>
+    <input type="text" id="address" name="address" value="{{shelter.address}}">
+    <label for="city">City</label>
+    <input type="text" id="city" name="city" value="{{shelter.city}}">
+    <label for="state">State</label>
+    <input type="text" id="state" name="state" value="{{shelter.state}}">
+    <label for="zip">Zip Code</label>
+    <input type="text" id="zip" name="zip" value="{{shelter.zipCode}}">
+  </fieldset>
+  <div class="jc-sb my1">
+    <input type="submit" class="btn--blue" value="Edit">
+    <a class="btn btn-cancel btn--gray" href="{{url_for('listShelter')}}">Cancel</a>
+  </div>
+</form>
 
 {% endblock %}

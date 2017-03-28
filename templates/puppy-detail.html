@@ -2,6 +2,34 @@
 
 {% block content %}
 
-Show detail for puppy {{puppy}}
+<div class="jc-sb align-baseline">
+  <h1>
+    {{puppy.name}}
+    {% if puppy.sex|length == 4 %}
+      <i class="fa fa-mars"></i>
+    {% else %}
+      <i class="fa fa-venus"></i>
+    {% endif %}
+  </h1>
+  <div>
+    <a href="{{url_for('editPuppy', shelter_id=shelter_id, puppy_id=puppy.id)}}" class="btn">Update Details</a>
+    <a href="{{url_for('deletePuppy', shelter_id=shelter_id, puppy_id=puppy.id)}}" class="btn">Remove from Shelter</a>
+  </div>
+</div>
+<div class="grd">
+  <div class="grd-row bg--light-gray p1">
+    <div class="grd-row-col-2-6">
+      <img src="{{puppy.picture}}" alt="{{puppy.name}}">
+    </div>
+    <div class="grd-row-col-4-6 p2">
+      Date of Birth: {{puppy.dateOfBirth}} <br>
+    </div>
+  </div>
+  <div class="grd-row">
+    <div class="grd-row-col-2-6 my2">
+      <a href="{{url_for('listPuppy', shelter_id=shelter_id)}}" class="btn">Back to Shelter</a>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

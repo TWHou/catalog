@@ -2,6 +2,15 @@
 
 {% block content %}
 
-Show delete form for shelter {{shelter}}
+<h1>Are you sure you want to close {{shelter.name}}?</h1>
+
+<form action="{{url_for('deleteShelter', shelter_id = shelter.id)}}" method="POST" role="form">
+
+  <div class="jc-sb my1">
+    <input type="submit" class="btn--red" value="Yes, Close Shelter">
+    <a class="btn--green btn-cancel" href="{{url_for('listShelter')}}">Cancel</a>
+  </div>
+
+</form>
 
 {% endblock %}

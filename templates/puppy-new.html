@@ -2,6 +2,31 @@
 
 {% block content %}
 
-Show form to add puppy to shelter {{shelter}}
+<h1>A New Puppy Ready to Find Forever Home?</h1>
+
+<form action="{{url_for('newPuppy', shelter_id=shelter.id)}}" method="POST" role="form">
+  <fieldset class="my1">
+    <legend>Puppy Name</legend>
+    <input type="text" name="name" placeholder="Adorable Fluffball" required>
+  </fieldset>
+
+  <fieldset class="my1">
+    <legend>Details</legend>
+    <div>
+      <label for="male">Male</label>
+      <input type="radio" id="male" name="sex" value="male" required="required">
+      <label for="female">Female</label>
+      <input type="radio" id="female" name="sex" value="female" required="required">
+    </div>
+    <label for="dob">Date of Birth</label>
+    <input type="date" id="dob" name="dob">
+    <label for="picture">Picture URL</label>
+    <input type="url" id="picture" name="picture" placeholder="http://www.picture.com">
+  </fieldset>
+  <div class="jc-sb my1">
+    <input type="submit" class="btn--green" value="Add to List">
+    <a class="btn btn-cancel btn--gray" href="{{url_for('listPuppy', shelter_id=shelter.id)}}">Cancel</a>
+  </div>
+</form>
 
 {% endblock %}

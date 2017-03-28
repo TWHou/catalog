@@ -1,0 +1,36 @@
+.btn-cancel {
+  margin-top: .85rem;
+  margin-bottom: .5rem;
+}
+
+.no-decor {
+  text-decoration: none;
+}
+
+.align-baseline {
+  align-items: baseline;
+}
+
+.jc-sb {
+  display: flex;
+  justify-content: space-between;
+}
+
+.jc-fe {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.jc-sa {
+  display: flex;
+  justify-content: space-around;
+}
+
+.direction-column {
+  flex-direction: column;
+}
+
+input[type="radio"] {
+  width: auto;
+  display: inline-block;
+}

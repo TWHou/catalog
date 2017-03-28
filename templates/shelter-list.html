@@ -2,6 +2,28 @@
 
 {% block content %}
 
-Show list of shelters
+<div class="jc-sb align-baseline">
+  <h1>Shelters</h1>
+  <a class="btn--green" href="{{url_for('newShelter')}}">New Shelter</a>
+</div>
+<div class="grd">
+  {% for shelter in shelters %}
+    <div class="grd-row bg--light-gray p2">
+      <div class="grd-row-col-5-6">
+        <a href="{{url_for('listPuppy', shelter_id=shelter.id)}}">{{shelter.name}}</a>
+        <p>
+          {{shelter.address}}<br>
+          {{shelter.city}},<br>
+          {{shelter.state}} {{shelter.zipCode}}
+        </p>
+      </div>
+      <div class="grd-row-col-1-6 direction-column jc-fe">
+        <a class="btn--blue btn--s" href="{{url_for('editShelter', shelter_id=shelter.id)}}">Edit</a>
+        <a class="btn--red btn--s" href="{{url_for('deleteShelter', shelter_id=shelter.id)}}">Delete</a>
+      </div>
+    </div>
+    <br>
+  {% endfor %}
+</div>
 
 {% endblock %}

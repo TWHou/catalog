@@ -3,10 +3,11 @@ from sqlalchemy.orm import sessionmaker
 from database_setup import Base, User, Shelter, Puppy
 from random import randint
 import datetime
+import random
 
 engine = create_engine('sqlite:///puppyshelter.db')
 
-Base.metadate.bind = engine
+Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
@@ -78,13 +79,13 @@ def CreateRandomAge():
     return birthday
 
 for i, x in enumerate(male_names):
-    new_puppy = Puppy(name=x, sex="male", date_of_birth=CreateRandomAge(
+    new_puppy = Puppy(name=x, sex="male", dateOfBirth=CreateRandomAge(
     ), picture=random.choice(puppy_images), shelter_id=randint(1, 5))
     session.add(new_puppy)
     session.commit()
 
 for i, x in enumerate(female_names):
-    new_puppy = Puppy(name=x, sex="female", date_of_birth=CreateRandomAge(
+    new_puppy = Puppy(name=x, sex="female", dateOfBirth=CreateRandomAge(
     ), picture=random.choice(puppy_images), shelter_id=randint(1, 5))
     session.add(new_puppy)
     session.commit()

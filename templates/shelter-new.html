@@ -2,6 +2,29 @@
 
 {% block content %}
 
-Show new shelter form
+<h1>Start a New Shelter</h1>
+
+<form action="{{url_for('newShelter')}}" method="POST" role="form">
+  <fieldset>
+    <legend>Shelter Name</legend>
+    <input type="text" name="name" placeholder="Awesome Shelter Name" required>
+  </fieldset>
+
+  <fieldset>
+    <legend>Address</legend>
+    <label for="address">Street</label>
+    <input type="text" id="address" name="address" placeholder="123 Pups Rd">
+    <label for="city">City</label>
+    <input type="text" id="city" name="city" placeholder="Woofington">
+    <label for="state">State</label>
+    <input type="text" id="state" name="state" placeholder="DG">
+    <label for="zip">Zip Code</label>
+    <input type="text" id="zip" name="zip" placeholder="12345">
+  </fieldset>
+  <div class="jc-sb my1">
+  <input type="submit" class="btn--green" value="Add">
+    <a class="btn btn-cancel btn--gray" href="{{url_for('listShelter')}}">Cancel</a>
+  </div>
+</form>
 
 {% endblock %}

@@ -2,6 +2,35 @@
 
 {% block content %}
 
-Show edit form for for puppy {{puppy}}
+<h1>Update Puppy Details</h1>
+
+<form action="{{url_for('editPuppy',shelter_id=shelter_id, puppy_id=puppy.id)}}" method="POST" role="form">
+  <fieldset class="my1">
+    <legend>Puppy Name</legend>
+    <input type="text" name="name" value="{{puppy.name}}" required>
+  </fieldset>
+
+  <fieldset class="my1">
+    <legend>Details</legend>
+    <div>
+      <label for="male">Male</label>
+      <input type="radio" id="male" name="sex" value="male" required="required"
+        {% if puppy.sex|length == 4 %} checked {% endif %}
+      >
+      <label for="female">Female</label>
+      <input type="radio" id="female" name="sex" value="female" required="required"
+        {% if puppy.sex|length == 6 %} checked {% endif %}
+      >
+    </div>
+    <label for="dob">Date of Birth</label>
+    <input type="date" id="dob" name="dob" value="{{puppy.dateOfBirth}}">
+    <label for="picture">Picture URL</label>
+    <input type="url" id="picture" name="picture" value="{{puppy.picture}}">
+  </fieldset>
+  <div class="jc-sb my1">
+    <input type="submit" class="btn--green" value="Update">
+    <a class="btn btn-cancel btn--gray" href="{{url_for('detailPuppy', shelter_id=shelter_id, puppy_id=puppy.id)}}">Cancel</a>
+  </div>
+</form>
 
 {% endblock %}
