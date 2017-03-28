@@ -9,16 +9,13 @@ from flask import session as login_session
 import random
 import string
 
-from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
+from oauth2client import client, crypt
 import httplib2
 import json
 import requests
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile('config.py')
-
-# Load Google client secret
-# CLIENT_ID = json.loads(open('clent_secrets.json', 'r').read())['web']['client_id']
 
 # Connect to database and create database session
 engine = create_engine('sqlite:///puppyshelter.db')
@@ -27,16 +24,84 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+def createUser(login_session):
+    newUser = User(name=login_session['username'], email=login_session['email'], picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
+
+def getUserId(email):
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
+
 
 # oauth login routes
 @app.route('/login')
 def showLogin():
-    return "This will be the Login page"
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+    login_session['state'] = state
+    return render_template('login.html', STATE=state, CLIENT_ID=app.config['CLIENT_ID'])
 
 
-@app.route('/gconnect')
+@app.route('/gconnect', methods=['POST'])
 def gconnect():
-    return "This will be the google connect methods"
+    try:
+        idinfo = client.verify_id_token(request.form['idtoken'], app.config['CLIENT_ID'])
+
+        # Or, if multiple clients access the backend server:
+        #idinfo = client.verify_id_token(token, None)
+        #if idinfo['aud'] not in [CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]:
+        #    raise crypt.AppIdentityError("Unrecognized client.")
+
+        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise crypt.AppIdentityError("Wrong issuer.")
+
+        # If auth request is from a G Suite domain:
+        #if idinfo['hd'] != GSUITE_DOMAIN_NAME:
+        #    raise crypt.AppIdentityError("Wrong hosted domain.")
+    except crypt.AppIdentityError:
+        response = make_response(json.dumps('Invalid Token.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    gid = idinfo['sub']
+
+    # Check if user is already logged in
+    stored_credentials = login_session.get('credentials')
+    stored_gid = login_session.get('gid')
+    if stored_credentials is not None and gid == stored_gid:
+        response = make_response(json.dumps('Current user is already connected.'), 200)
+        response.headers['Content-Type'] = 'applcation/json'
+        return response
+
+    # Store access token in session
+    login_session['credentials'] = idinfo
+    login_session['gid'] = gid
+    login_session['username'] = idinfo['name']
+    login_session['picture'] = idinfo['picture']
+    login_session['email'] = idinfo['email']
+
+    # Check if user registered, if not, register user
+    user_id = getUserId(login_session['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
+
+    output = ''
+    output += '<h1>Welcome '
+    output += login_session['username']
+    output += '!</h1>'
+    output += '<img src="'
+    output += login_session['picture']
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;"> '
+    return output
 
 
 @app.route('/gdisconnect')
