@@ -45,19 +45,22 @@ def gdisconnect():
 
 
 # JSON API routes
-@app.route('/shelter/JSON')
+@app.route('/shelter/JSON/')
 def shelterJSON():
-    return "JSON of all shelters"
+    shelters = session.query(Shelter).all()
+    return jsonify(shelters = [s.serialize for s in shelters])
 
 
-@app.route('/shelter/<int:shelter_id>/puppy/JSON')
+@app.route('/shelter/<int:shelter_id>/puppy/JSON/')
 def listPuppyJSON(shelter_id):
-    return "JSON of puppies at one shelter"
+    puppies = session.query(Puppy).filter_by(shelter_id = shelter_id).all()
+    return jsonify(puppies = [p.serialize for p in puppies])
 
 
-@app.route('/shelter/<int:shelter_id>/puppy/<int:puppy_id>/JSON')
+@app.route('/shelter/<int:shelter_id>/puppy/<int:puppy_id>/JSON/')
 def puppyJSON(shelter_id, puppy_id):
-    return "JSON of puppy detail"
+    puppy = session.query(Puppy).filter_by(id = puppy_id).one()
+    return jsonify(puppy = puppy.serialize)
 
 
 # shelter routes

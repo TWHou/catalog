@@ -53,8 +53,8 @@ class Puppy(Base):
         return {
             'id': self.id,
             'name': self.name,
-            'sed': self.sex,
-            'dateOfBirth': self.dateOfBirth,
+            'sex': self.sex,
+            'dateOfBirth': str(self.dateOfBirth),
             'picture': self.picture
         }
 
