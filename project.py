@@ -48,11 +48,11 @@ def getUserId(email):
 def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
     login_session['state'] = state
-    return render_template('google-login.html', STATE=state, CLIENT_ID=app.config['CLIENT_ID'])
+    return render_template('googleauth.html', STATE=state, CLIENT_ID=app.config['CLIENT_ID'])
 
 @app.route('/logout')
 def showLogout():
-    return render_template('google-logout.html', CLIENT_ID=app.config['CLIENT_ID'])
+    return render_template('googleauth.html', CLIENT_ID=app.config['CLIENT_ID'])
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -118,8 +118,9 @@ def gdisconnect():
     del login_session['username']
     del login_session['picture']
     del login_session['email']
-    flash("Successfully Signed Out.")
-    return redirect(url_for('listShelter'))
+    response = make_response(json.dumps('Successfully Signed Out.'), 200)
+    response.headers['Content-Type'] = 'application/json'
+    return response
 
 
 # JSON API routes
