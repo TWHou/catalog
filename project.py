@@ -48,11 +48,18 @@ def getUserId(email):
 def showLogin():
     state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
     login_session['state'] = state
-    return render_template('login.html', STATE=state, CLIENT_ID=app.config['CLIENT_ID'])
+    return render_template('google-login.html', STATE=state, CLIENT_ID=app.config['CLIENT_ID'])
 
+@app.route('/logout')
+def showLogout():
+    return render_template('google-logout.html', CLIENT_ID=app.config['CLIENT_ID'])
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    if request.args.get('state') != login_session['state']:
+        response = make_response(json.dumps("Invalid state parameter"), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
     try:
         idinfo = client.verify_id_token(request.form['idtoken'], app.config['CLIENT_ID'])
 
@@ -106,7 +113,13 @@ def gconnect():
 
 @app.route('/gdisconnect')
 def gdisconnect():
-    return "This disconnects from google"
+    del login_session['credentials']
+    del login_session['gid']
+    del login_session['username']
+    del login_session['picture']
+    del login_session['email']
+    flash("Successfully Signed Out.")
+    return redirect(url_for('listShelter'))
 
 
 # JSON API routes

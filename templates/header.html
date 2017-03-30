@@ -3,7 +3,13 @@
     <i class="fa fa-home" aria-hidden="true"></i>
     All Shelters
   </a>
+  {% if 'username' not in session %}
   <a class="btn--green" href="{{url_for('showLogin')}}">
-    <i class="fa fa-sign-in" aria-hidden="true"></i>
+    <i class="fa fa-sign-in" aria-hidden="true"></i> Sign In
   </a>
+  {% else %}
+  <a class="btn--red" href="{{url_for('gdisconnect')}}">
+    <i class="fa fa-sign-out" aria-hidden="true"></i> Sign Out
+  </a>
+  {% endif %}
 </nav>
