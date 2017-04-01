@@ -4,12 +4,15 @@
 
 <div class="jc-sb align-baseline">
   <h1>Shelters</h1>
+  {% if 'username' in session %}
   <a class="btn--green" href="{{url_for('newShelter')}}">New Shelter</a>
+  {% endif %}
 </div>
 <div class="grd">
-  {% for shelter in shelters %}
-    <div class="grd-row bg--light-gray p2">
-      <div class="grd-row-col-5-6">
+  {% for row in shelters|batch(2) %}
+    <div class="grd-row">
+    {% for shelter in row %}
+      <div class="grd-row-col-3-6 bg--light-gray p2 m1">
         <a href="{{url_for('listPuppy', shelter_id=shelter.id)}}">{{shelter.name}}</a>
         <p>
           {{shelter.address}}<br>
@@ -17,12 +20,8 @@
           {{shelter.state}} {{shelter.zipCode}}
         </p>
       </div>
-      <div class="grd-row-col-1-6 direction-column jc-fe">
-        <a class="btn--blue btn--s" href="{{url_for('editShelter', shelter_id=shelter.id)}}">Edit</a>
-        <a class="btn--red btn--s" href="{{url_for('deleteShelter', shelter_id=shelter.id)}}">Delete</a>
-      </div>
+    {% endfor %}
     </div>
-    <br>
   {% endfor %}
 </div>
 

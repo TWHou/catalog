@@ -2,10 +2,14 @@
 
 {% block content %}
 
-<div class="jc-sb align-baseline">
-  <h1>Puppies in {{shelter.name}}</h1>
+<h1>{{shelter.name}}</h1>
+{% if session.user_id == shelter.user_id %}
+<div class="txt--right">
   <a class="btn--green" href="{{url_for('newPuppy', shelter_id=shelter.id)}}">Found a New Puppy</a>
+  <a class="btn--blue" href="{{url_for('editShelter', shelter_id=shelter.id)}}">Edit Shelter</a>
+  <a class="btn--red" href="{{url_for('deleteShelter', shelter_id=shelter.id)}}">Close Shelter</a>
 </div>
+{% endif %}
 <div class="grd">
   {% for row in puppies|batch(3) %}
   <div class="grd-row bg--light-gray p1">

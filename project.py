@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash, make_response
 from datetime import datetime
 
+from functools import wraps
+
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, User, Shelter, Puppy
@@ -42,6 +44,26 @@ def getUserId(email):
     except:
         return None
 
+def logged_in(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            if login_session['username']:
+                return f(*args, **kwargs)
+        except KeyError:
+            flash("You must sign in first.")
+            return redirect(url_for('listShelter'))
+    return decorated_function
+
+def owns_shelter(f):
+    @wraps(f)
+    def decorated_function(shelter_id, *args, **kwargs):
+        shelter = session.query(Shelter).filter_by(id=shelter_id).one()
+        if shelter.user_id != login_session['user_id']:
+            flash("You do not own this shelter.")
+            return redirect(url_for('listPuppy', shelter_id = shelter.id))
+        return f(shelter, *args, **kwargs)
+    return decorated_function
 
 # oauth login routes
 @app.route('/login')
@@ -118,6 +140,7 @@ def gdisconnect():
     del login_session['username']
     del login_session['picture']
     del login_session['email']
+    del login_session['user_id']
     response = make_response(json.dumps('Successfully Signed Out.'), 200)
     response.headers['Content-Type'] = 'application/json'
     return response
@@ -151,6 +174,7 @@ def listShelter():
 
 
 @app.route('/shelter/new/', methods=['GET', 'POST'])
+@logged_in
 def newShelter():
     if request.method == 'POST':
         if request.form['name']:
@@ -159,8 +183,7 @@ def newShelter():
             city = request.form['city']
             state = request.form['state']
             zipCode = request.form['zip']
-            # temporarily hardcode user_id before implementing user login
-            user_id = 1
+            user_id = login_session['user_id']
             newShelter = Shelter(name=name, address=address, city=city, state=state, zipCode=zipCode, user_id=user_id)
             session.add(newShelter)
             session.commit()
@@ -174,8 +197,9 @@ def newShelter():
 
 
 @app.route('/shelter/<int:shelter_id>/edit/', methods=['GET', 'POST'])
-def editShelter(shelter_id):
-    shelter = session.query(Shelter).filter_by(id=shelter_id).one()
+@logged_in
+@owns_shelter
+def editShelter(shelter):
     if request.method == 'POST':
         if request.form['name']:
             shelter.name = request.form['name']
@@ -195,8 +219,9 @@ def editShelter(shelter_id):
 
 
 @app.route('/shelter/<int:shelter_id>/delete/', methods=['GET', 'POST'])
-def deleteShelter(shelter_id):
-    shelter = session.query(Shelter).filter_by(id=shelter_id).one()
+@logged_in
+@owns_shelter
+def deleteShelter(shelter):
     if request.method == 'POST':
         session.delete(shelter)
         session.commit()
@@ -216,19 +241,21 @@ def listPuppy(shelter_id):
 
 
 @app.route('/shelter/<int:shelter_id>/puppy/new/', methods = ['GET', 'POST'])
-def newPuppy(shelter_id):
-    shelter = session.query(Shelter).filter_by(id=shelter_id).one()
+@logged_in
+@owns_shelter
+def newPuppy(shelter):
+    #shelter = session.query(Shelter).filter_by(id=shelter_id).one()
     if request.method == 'POST':
         if request.form['name'] and request.form['sex']:
             name = request.form['name']
             sex = request.form['sex']
             dateOfBirth = datetime.strptime(request.form['dob'], "%Y-%m-%d")
             picture = request.form['picture']
-            newPuppy = Puppy(name=name, sex=sex, dateOfBirth=dateOfBirth, picture=picture, shelter_id=shelter_id)
+            newPuppy = Puppy(name=name, sex=sex, dateOfBirth=dateOfBirth, picture=picture, shelter_id=shelter.id)
             session.add(newPuppy)
             session.commit()
             flash("%s is now looking for a forever home." % name)
-            return redirect(url_for('listPuppy', shelter_id=shelter_id))
+            return redirect(url_for('listPuppy', shelter_id=shelter.id))
         else:
             if not request.form['name']:
                 flash("Please name the puppy so we'll know who's been a good dog.");
@@ -241,12 +268,15 @@ def newPuppy(shelter_id):
 
 @app.route('/shelter/<int:shelter_id>/puppy/<int:puppy_id>/')
 def detailPuppy(shelter_id, puppy_id):
+    shelter = session.query(Shelter).filter_by(id=shelter_id).one()
     puppy = session.query(Puppy).filter_by(id=puppy_id).one()
-    return render_template("puppy-detail.html", shelter_id=shelter_id, puppy=puppy)
+    return render_template("puppy-detail.html", shelter=shelter, puppy=puppy)
 
 
 @app.route('/shelter/<int:shelter_id>/puppy/<int:puppy_id>/edit/', methods = ['GET', 'POST'])
-def editPuppy(shelter_id, puppy_id):
+@logged_in
+@owns_shelter
+def editPuppy(shelter, puppy_id):
     puppy = session.query(Puppy).filter_by(id=puppy_id).one()
     if request.method == 'POST':
         if request.form['name'] and request.form['sex']:
@@ -254,11 +284,11 @@ def editPuppy(shelter_id, puppy_id):
             puppy.sex = request.form['sex']
             puppy.dateOfBirth = datetime.strptime(request.form['dob'], "%Y-%m-%d")
             puppy.picture = request.form['picture']
-            puppy.shelter_id = shelter_id
+            puppy.shelter_id = shelter.id
             session.add(puppy)
             session.commit()
             flash("%s's info has been updated." % puppy.name)
-            return redirect(url_for('detailPuppy', shelter_id=shelter_id, puppy_id=puppy_id))
+            return redirect(url_for('detailPuppy', shelter_id=shelter.id, puppy_id=puppy_id))
         else:
             if not request.form['name']:
                 flash("Please name the puppy so we'll know who's been a good dog.");
@@ -266,19 +296,21 @@ def editPuppy(shelter_id, puppy_id):
                 flash("Not trying to assume their gender, but the sex of the puppy would really help.")
                 return render_template("puppy-edit.html", puppy = puppy)
     else:
-        return render_template("puppy-edit.html", shelter_id=shelter_id, puppy=puppy)
+        return render_template("puppy-edit.html", shelter_id=shelter.id, puppy=puppy)
 
 
 @app.route('/shelter/<int:shelter_id>/puppy/<int:puppy_id>/delete/', methods = ['GET', 'POST'])
-def deletePuppy(shelter_id, puppy_id):
+@logged_in
+@owns_shelter
+def deletePuppy(shelter, puppy_id):
     puppy = session.query(Puppy).filter_by(id=puppy_id).one()
     if request.method == 'POST':
         session.delete(puppy)
         session.commit()
         flash("Congradulations, %s!" % puppy.name)
-        return redirect(url_for('listPuppy', shelter_id = shelter_id))
+        return redirect(url_for('listPuppy', shelter_id = shelter.id))
     else:
-        return render_template("puppy-delete.html", shelter_id=shelter_id, puppy=puppy)
+        return render_template("puppy-delete.html", shelter_id=shelter.id, puppy=puppy)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

@@ -12,8 +12,10 @@
     {% endif %}
   </h1>
   <div>
-    <a href="{{url_for('editPuppy', shelter_id=shelter_id, puppy_id=puppy.id)}}" class="btn">Update Details</a>
-    <a href="{{url_for('deletePuppy', shelter_id=shelter_id, puppy_id=puppy.id)}}" class="btn">Remove from Shelter</a>
+  {% if session.user_id == shelter.user_id %}
+    <a href="{{url_for('editPuppy', shelter_id=shelter.id, puppy_id=puppy.id)}}" class="btn">Update Details</a>
+    <a href="{{url_for('deletePuppy', shelter_id=shelter.id, puppy_id=puppy.id)}}" class="btn">Remove from Shelter</a>
+  {% endif %}
   </div>
 </div>
 <div class="grd">
@@ -27,7 +29,7 @@
   </div>
   <div class="grd-row">
     <div class="grd-row-col-2-6 my2">
-      <a href="{{url_for('listPuppy', shelter_id=shelter_id)}}" class="btn">Back to Shelter</a>
+      <a href="{{url_for('listPuppy', shelter_id=shelter.id)}}" class="btn">Back to Shelter</a>
     </div>
   </div>
 </div>
